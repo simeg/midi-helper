@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 const midi = require('midi');
 
 const input = new midi.input();
@@ -9,12 +11,21 @@ const callback = (delta, msg) => {
 
   const code = msg[1];
 
-  console.log(code);
+  switch (code) {
+    case 75: // top-right knob
+      console.log(`received closing code [${code}], closing connection to [${input.getportname(0)}]`);
+      input.closeport();
+      break;
+    case 10: // top-left knob
+      const exec = require('child_process').exec;
 
-  // 75 resolves to most top-right knob
-  if (code === 75) {
-    console.log(`Received closing code [${code}], closing connection to [${input.getPortName(0)}]`);
-    input.closePort();
+      exec('sh ./scripts/spotify-notification.sh', (error, stdout, stderr) => {
+        if (error) return console.error(error);
+        // Success
+      })
+      break;
+    default:
+      console.log(code);
   }
 }
 
